@@ -10,8 +10,8 @@ BaseApplication::BaseApplication()
     mCamera(0),
     mSceneMgr(0),
     mWindow(0),
-    mResourcesCfg(Ogre::StringUtil::BLANK),
-    mPluginsCfg(Ogre::StringUtil::BLANK),
+    mResourcesCfg(Ogre::BLANKSTRING),
+    mPluginsCfg(Ogre::BLANKSTRING),
 	mPolygonRenderingMode('B'),
     mShutDown(false),
     mInputManager(0),
@@ -43,7 +43,7 @@ bool BaseApplication::configure()
     // Show the configuration dialog and initialise the system
     // You can skip this and use root.restoreConfig() to load configuration
     // settings if you were sure there are valid ones saved in ogre.cfg
-    if(mRoot->showConfigDialog())
+    if(mRoot->showConfigDialog(nullptr))
     {
         // If returned true, user clicked OK so initialise
         // Here we choose to let the system create a default rendering window by passing 'true'
@@ -127,18 +127,18 @@ void BaseApplication::setupResources()
     cf.load(mResourcesCfg);
 
     // Go through all sections & settings in the file
-    Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
+    auto settingsSec = cf.getSettingsBySection();
 
     Ogre::String secName, typeName, archName;
-    while (seci.hasMoreElements())
+
+    for (auto sec_it = std::begin(settingsSec); sec_it != std::end(settingsSec); ++sec_it)
     {
-        secName = seci.peekNextKey();
-        Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
-        Ogre::ConfigFile::SettingsMultiMap::iterator i;
-        for (i = settings->begin(); i != settings->end(); ++i)
+        secName = (*sec_it).first;
+        auto settings = (*sec_it).second;
+        for (auto config_it = std::begin(settings); config_it != std::end(settings); ++config_it)
         {
-            typeName = i->first;
-            archName = i->second;
+            typeName = config_it->first;
+            archName = config_it->second;
             Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
                 archName, typeName, secName);
         }

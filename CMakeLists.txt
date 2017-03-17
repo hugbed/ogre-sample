@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.12)
 
 # Change this to your project's name
 set(PROJECT_NAME "ogre-sample")
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(${PROJECT_NAME} CXX C)
 
@@ -25,7 +27,7 @@ elseif(UNIX)
 	  set(CMAKE_MODULE_PATH "/usr/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
 	else ()
 	  message(SEND_ERROR "Failed to find module path.")
-	endif(EXISTS "/usr/local/lib/OGRE")
+	endif(EXISTS "/usr/local/lib/OGRE/cmake")
 endif(WIN32)
  
 if (CMAKE_BUILD_TYPE STREQUAL "")
@@ -97,11 +99,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POS
  
 target_link_libraries(${PROJECT_NAME} ${OGRE_LIBRARIES} ${OIS_LIBRARIES} ${Boost_LIBRARIES})
 
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
-file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/media)
- 
 # post-build copy for win32
 if(WIN32 AND NOT MINGW)
+        file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)
+        file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/media)
+
 	add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD
 		COMMAND if not exist \"${CMAKE_INSTALL_PREFIX}/bin\" mkdir \"${CMAKE_INSTALL_PREFIX}/bin\" )
 	add_custom_command( TARGET ${PROJECT_NAME} POST_BUILD
@@ -166,14 +168,14 @@ if(UNIX)
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
  
-	install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/media
-		DESTINATION ./
+	install(DIRECTORY ${PROJECT_SOURCE_DIR}/dist/media
+		DESTINATION ${CMAKE_BINARY_DIR}
 		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
  
-	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
-		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
-		DESTINATION bin
+	install(FILES ${PROJECT_SOURCE_DIR}/dist/bin/plugins.cfg
+		${PROJECT_SOURCE_DIR}/dist/bin/resources.cfg
+		DESTINATION ${CMAKE_BINARY_DIR}/bin
 		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
  
