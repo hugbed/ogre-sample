@@ -6,26 +6,28 @@
 
 //-------------------------------------------------------------------------------------
 BaseApplication::BaseApplication()
-    : mRoot(0),
-    mCamera(0),
-    mSceneMgr(0),
-    mWindow(0),
-    mResourcesCfg(Ogre::BLANKSTRING),
-    mPluginsCfg(Ogre::BLANKSTRING),
-	mPolygonRenderingMode('B'),
-    mShutDown(false),
-    mInputManager(0),
-    mMouse(0),
-    mKeyboard(0),
-    mCameraMan(0)
+    : mFSLayer(OGRE_NEW_T(Ogre::FileSystemLayer, Ogre::MEMCATEGORY_GENERAL)(OGRE_VERSION_NAME),
+        [](Ogre::FileSystemLayer* fsl){
+            OGRE_DELETE_T(fsl, FileSystemLayer, Ogre::MEMCATEGORY_GENERAL);
+        })
+    , mRoot{}
+    , mCamera(nullptr)
+    , mSceneMgr(nullptr)
+    , mWindow(nullptr)
+    , mResourcesCfg(Ogre::BLANKSTRING)
+    , mPluginsCfg(Ogre::BLANKSTRING)
+	, mPolygonRenderingMode('B')
+    , mShutDown(false)
+    , mInputManager(nullptr)
+    , mMouse(nullptr)
+    , mKeyboard(nullptr)
+    , mCameraMan{}
 {
-    mFSLayer = OGRE_NEW_T(Ogre::FileSystemLayer, Ogre::MEMCATEGORY_GENERAL)(OGRE_VERSION_NAME);
 }
 
 //-------------------------------------------------------------------------------------
 BaseApplication::~BaseApplication()
 {
-    if (mCameraMan) { delete mCameraMan; }
 	if (mRoot) { mRoot->removeFrameListener(this); }
 
     //Remove ourself as a Window listener
@@ -33,8 +35,6 @@ BaseApplication::~BaseApplication()
     	Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
     	windowClosed(mWindow);
 	}
-    if (mRoot) { delete mRoot; }
-    OGRE_DELETE_T(mFSLayer, FileSystemLayer, Ogre::MEMCATEGORY_GENERAL);
 }
 
 //-------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ void BaseApplication::createCamera()
     mCamera->lookAt(Ogre::Vector3(0,0,-300));
     mCamera->setNearClipDistance(5);
 
-    mCameraMan = new OgreCookies::CameraMan(mCamera);   // create a default camera controller
+    mCameraMan = std::make_unique<OgreCookies::CameraMan>(mCamera);   // create a default camera controller
 }
 //-------------------------------------------------------------------------------------
 void BaseApplication::createFrameListener()
@@ -176,7 +176,7 @@ void BaseApplication::run()
 //-------------------------------------------------------------------------------------
 bool BaseApplication::setup()
 {
-    mRoot = new Ogre::Root(mPluginsCfg, mFSLayer->getWritablePath("ogre.cfg"),
+    mRoot = std::make_unique<Ogre::Root>(mPluginsCfg, mFSLayer->getWritablePath("ogre.cfg"),
 				mFSLayer->getWritablePath("ogre.log"));
 
     setupResources();

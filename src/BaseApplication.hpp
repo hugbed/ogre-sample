@@ -55,11 +55,11 @@ protected:
     virtual void windowResized(Ogre::RenderWindow *); //Adjust mouse clipping area
     virtual void windowClosed(Ogre::RenderWindow *); //Unattach OIS before window shutdown (very important under Linux)
 
-    Ogre::FileSystemLayer* mFSLayer; // File system abstraction layer
+    std::unique_ptr<Ogre::FileSystemLayer, void(*)(Ogre::FileSystemLayer*)> mFSLayer; // File system abstraction layer
     Ogre::String mResourcesCfg;
     Ogre::String mPluginsCfg;
 
-    Ogre::Root *mRoot;
+    std::unique_ptr<Ogre::Root> mRoot;
     Ogre::Camera *mCamera;
     Ogre::SceneManager *mSceneMgr;
     Ogre::RenderWindow *mWindow;
@@ -72,7 +72,7 @@ protected:
     OIS::Keyboard* mKeyboard;
 
     // OgreCookies
-    OgreCookies::CameraMan* mCameraMan;       // basic camera controller
+    std::unique_ptr<OgreCookies::CameraMan> mCameraMan;       // basic camera controller
 };
 
 #endif // #ifndef __BaseApplication_h_
